@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OffineRegistry
 {
-     public class OffregHive : RegistryBase
+     public class RegistryHive : RegistryBase
 {
     /// <summary>
     ///     The Root key of this hive.
@@ -16,7 +16,7 @@ namespace OffineRegistry
     ///     Internal constructor to form an Offline Registry Hive from an open handle.
     /// </summary>
     /// <param name="hivePtr"></param>
-    internal OffregHive(IntPtr hivePtr)
+    internal RegistryHive(IntPtr hivePtr)
     {
         _intPtr = hivePtr;
 
@@ -44,14 +44,14 @@ namespace OffineRegistry
     ///     Creates a new hive in memory.
     /// </summary>
     /// <returns>The newly created hive.</returns>
-    public static OffregHive Create()
+    public static RegistryHive Create()
     {
             Win32Result res = Native.CreateHive(out IntPtr newHive);
 
             if (res != Win32Result.ERROR_SUCCESS)
             throw new Win32Exception((int)res);
 
-        return new OffregHive(newHive);
+        return new RegistryHive(newHive);
     }
 
     /// <summary>
@@ -59,14 +59,14 @@ namespace OffineRegistry
     /// </summary>
     /// <param name="hiveFile">The file to open.</param>
     /// <returns>The newly opened hive.</returns>
-    public static OffregHive Open(string hiveFile)
+    public static RegistryHive Open(string hiveFile)
     {
             Win32Result res = Native.OpenHive(hiveFile, out IntPtr existingHive);
 
             if (res != Win32Result.ERROR_SUCCESS)
             throw new Win32Exception((int)res);
 
-        return new OffregHive(existingHive);
+        return new RegistryHive(existingHive);
     }
 
     /// <summary>
