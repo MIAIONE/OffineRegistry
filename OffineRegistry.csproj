@@ -14,6 +14,8 @@
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <Description>fork steve4444/RegInject by standard 2.1</Description>
     <PackageTags>windows;reg;registry;offline;offreg;win32;win;hive</PackageTags>
+    <RepositoryUrl>https://github.com/MIAIONE/OffineRegistry</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/MIAIONE/OffineRegistry</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
