@@ -5,6 +5,10 @@ VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OffineRegistry", "OffineRegistry.csproj", "{0F3FA86B-7459-4763-992B-2D952E5D6008}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CC1CC8EB-F967-493A-8F3E-9A3B6D18DDEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Offine.Test", "test\Offine.Test\Offine.Test.csproj", "{244EBF7F-C543-4A9B-9C37-ADE9A9B11A97}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +19,16 @@ Global
 		{0F3FA86B-7459-4763-992B-2D952E5D6008}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F3FA86B-7459-4763-992B-2D952E5D6008}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F3FA86B-7459-4763-992B-2D952E5D6008}.Release|Any CPU.Build.0 = Release|Any CPU
+		{244EBF7F-C543-4A9B-9C37-ADE9A9B11A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{244EBF7F-C543-4A9B-9C37-ADE9A9B11A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{244EBF7F-C543-4A9B-9C37-ADE9A9B11A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{244EBF7F-C543-4A9B-9C37-ADE9A9B11A97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{244EBF7F-C543-4A9B-9C37-ADE9A9B11A97} = {CC1CC8EB-F967-493A-8F3E-9A3B6D18DDEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {41990BFC-320A-4D5A-83FF-DB0793741849}
