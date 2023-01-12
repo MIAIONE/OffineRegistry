@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Security;
 using System.Text;
 
 namespace OffineRegistry
@@ -78,91 +79,37 @@ namespace OffineRegistry
         UNPROTECTED_DACL_SECURITY_INFORMATION = 0x20000000,
         UNPROTECTED_SACL_SECURITY_INFORMATION = 0x10000000,
     }
-
-    /// <summary>
-    /// All the functions can be read about here: http://msdn.microsoft.com/en-us/library/ee210756(v=vs.85).aspx
-    /// </summary>
-    internal static class Native
+    [SuppressUnmanagedCodeSecurity]
+    internal class Native
     {
+        //internal const string OffRegDllName = "offreg.dll";
 
-        private const string OffRegDllName = "offreg.dll";
+        //[DllImport(OffRegDllName, EntryPoint = "ORCreateHive", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORCreateHive(out IntPtr rootKeyHandle);
 
-        /// <summary>
-        /// Create a new Registry Hive See http://msdn.microsoft.com/en-us/library/2d6dt3kf.aspx
-        /// </summary>
-        /// <param name="rootKeyHandle"> The handle to the new hive. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORCreateHive", CharSet = CharSet.Unicode)]
-        public static extern Win32Result CreateHive(out IntPtr rootKeyHandle);
+        //[DllImport(OffRegDllName, EntryPoint = "OROpenHive", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result OROpenHive(string path, out IntPtr rootKeyHandle);
 
-        /// <summary>
-        /// Open an existing Registry Hive See http://msdn.microsoft.com/en-us/library/ee210770(v=vs.85).aspx
-        /// </summary>
-        /// <param name="path"> The path to the hive file. </param>
-        /// <param name="rootKeyHandle"> The handle to an open hive. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "OROpenHive", CharSet = CharSet.Unicode)]
-        public static extern Win32Result OpenHive(string path, out IntPtr rootKeyHandle);
+        //[DllImport(OffRegDllName, EntryPoint = "ORCloseHive", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORCloseHive(IntPtr rootKeyHandle);
 
-        /// <summary>
-        /// Close an open hive, freeing ressources used by it. See http://msdn.microsoft.com/en-us/library/ee210758(v=vs.85).aspx
-        /// </summary>
-        /// <seealso cref="SaveHive"/>
-        /// <remarks> This does not save a hive to disk, to preserve changes, see <see cref="SaveHive"/>. </remarks>
-        /// <param name="rootKeyHandle"> The handle to an open hive. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORCloseHive", CharSet = CharSet.Unicode)]
-        public static extern Win32Result CloseHive(IntPtr rootKeyHandle);
-
-        /// <summary>
-        /// Save an open hive to disk. This saves the hive with a specific compatibility option. See
-        /// the link below for more details. See http://msdn.microsoft.com/en-us/library/ee210773(v=vs.85).aspx
-        /// </summary>
-        /// <param name="rootKeyHandle"> The handle to the open hive </param>
-        /// <param name="path"> The path to a non-existent file in which to save the hive </param>
-        /// <param name="dwOsMajorVersion"> The major os version to save the hive for. See summary. </param>
-        /// <param name="dwOsMinorVersion"> The minor os version to save the hive for. See summary. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORSaveHive", CharSet = CharSet.Unicode)]
-        public static extern Win32Result SaveHive(
+        //[DllImport(OffRegDllName, EntryPoint = "ORSaveHive", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORSaveHive(
             IntPtr rootKeyHandle,
             string path,
             uint dwOsMajorVersion,
             uint dwOsMinorVersion);
 
-        /// <summary>
-        /// Close an open key. See http://msdn.microsoft.com/en-us/library/ee210759(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> The handle to an open key. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORCloseKey")]
-        public static extern Win32Result CloseKey(IntPtr hKey);
+        //[DllImport(OffRegDllName, EntryPoint = "ORCloseKey")]
+        internal delegate Win32Result ORCloseKey(IntPtr hKey);
 
-        /// <summary>
-        /// Create a new subkey (or open an existing one) under another key. See http://msdn.microsoft.com/en-us/library/ee210761(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open key. </param>
-        /// <param name="lpSubKey"> Name of the new subkey. </param>
-        /// <param name="lpClass"> Name of the type of the new subkey. </param>
-        /// <param name="dwOptions"> Options for the creation. </param>
-        /// <param name="lpSecurityDescriptor"> Security descripter, may be NULL. </param>
-        /// <param name="phkResult"> The handle to the newly created key. </param>
-        /// <param name="lpdwDisposition"> The reuslting disposition. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORCreateKey", CharSet = CharSet.Unicode)]
-        public static extern Win32Result CreateKey(
+        //[DllImport(OffRegDllName, EntryPoint = "ORCreateKey", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORCreateKey(
             IntPtr hKey,
             string lpSubKey,
             string lpClass,
@@ -171,51 +118,21 @@ namespace OffineRegistry
             /*ref IntPtr*/ out IntPtr phkResult,
             out KeyDisposition lpdwDisposition);
 
-        /// <summary>
-        /// Delete a subkey. See http://msdn.microsoft.com/en-us/library/ee210762(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open parent key. </param>
-        /// <param name="lpSubKey">
-        /// Name of the subkey, in the parent, to delete. Null indicates that the parent should be deleted.
-        /// </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-
-        [DllImport(OffRegDllName, EntryPoint = "ORDeleteKey", CharSet = CharSet.Unicode)]
-        public static extern Win32Result DeleteKey(
+        //[DllImport(OffRegDllName, EntryPoint = "ORDeleteKey", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORDeleteKey(
             IntPtr hKey,
             string lpSubKey);
 
-        /// <summary>
-        /// Delete a value under a key. See http://msdn.microsoft.com/en-us/library/ee210763(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open parent key. </param>
-        /// <param name="lpValueName"> Name of the value to delete. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORDeleteValue", CharSet = CharSet.Unicode)]
-        public static extern Win32Result DeleteValue(
+        //[DllImport(OffRegDllName, EntryPoint = "ORDeleteValue", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORDeleteValue(
             IntPtr hKey,
             string lpValueName);
 
-        /// <summary>
-        /// Enumerate keys under a parent. See http://msdn.microsoft.com/en-us/library/ee210764(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open parent key. </param>
-        /// <param name="dwIndex"> Index of the child to retrieve. </param>
-        /// <param name="lpName"> Buffer for the childs name. </param>
-        /// <param name="lpcchName"> Size of the childs name buffer. </param>
-        /// <param name="lpClass"> Buffer for the childs class. </param>
-        /// <param name="lpcchClass"> Size of the childs class buffer. </param>
-        /// <param name="lpftLastWriteTime"> FileTime structure indicating last write time. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success,
-        /// Win32Result.ERROR_NO_MORE_ITEMS indicates that no more childs exist.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "OREnumKey", CharSet = CharSet.Unicode)]
-        public static extern Win32Result EnumKey(
+        //[DllImport(OffRegDllName, EntryPoint = "OREnumKey", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result OREnumKey(
             IntPtr hKey,
             uint dwIndex,
             StringBuilder lpName,
@@ -224,45 +141,9 @@ namespace OffineRegistry
             ref uint lpcchClass,
             ref FILETIME lpftLastWriteTime);
 
-        /// <summary>
-        /// Enumerate keys under a parent. See http://msdn.microsoft.com/en-us/library/ee210764(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open parent key. </param>
-        /// <param name="dwIndex"> Index of the child to retrieve. </param>
-        /// <param name="lpName"> Buffer for the childs name. </param>
-        /// <param name="lpcchName"> Size of the childs name buffer. </param>
-        /// <param name="lpClass"> Unused - set to Intpr.Zero. </param>
-        /// <param name="lpcchClass"> Unused - set to Intpr.Zero. </param>
-        /// <param name="lpftLastWriteTime"> Unused - set to Intpr.Zero. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success,
-        /// Win32Result.ERROR_NO_MORE_ITEMS indicates that no more childs exist.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "OREnumKey", CharSet = CharSet.Unicode)]
-        public static extern Win32Result EnumKey(
-            IntPtr hKey,
-            uint dwIndex,
-            StringBuilder lpName,
-            ref uint lpcchName,
-            StringBuilder lpClass,
-            IntPtr lpcchClass,
-            IntPtr lpftLastWriteTime);
-
-        /// <summary>
-        /// Enumerate a keys values. See http://msdn.microsoft.com/en-us/library/ee210765(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open parent key. </param>
-        /// <param name="dwIndex"> Index of the child to retrieve. </param>
-        /// <param name="lpValueName"> Buffer for the childs name. </param>
-        /// <param name="lpcchValueName"> Size of the childs name buffer. </param>
-        /// <param name="lpType"> Value type. </param>
-        /// <param name="lpData"> Pointer to data buffer. </param>
-        /// <param name="lpcbData"> Size of data buffer. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "OREnumValue", CharSet = CharSet.Unicode)]
-        public static extern Win32Result EnumValue(
+        //[DllImport(OffRegDllName, EntryPoint = "OREnumValue", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result OREnumValue(
             IntPtr hKey,
             uint dwIndex,
             StringBuilder lpValueName,
@@ -271,62 +152,19 @@ namespace OffineRegistry
             IntPtr lpData,
             ref uint lpcbData);
 
-        /// <summary>
-        /// Enumerate a keys values. See http://msdn.microsoft.com/en-us/library/ee210765(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open parent key. </param>
-        /// <param name="dwIndex"> Index of the child to retrieve. </param>
-        /// <param name="lpValueName"> Buffer for the childs name. </param>
-        /// <param name="lpcchValueName"> Size of the childs name buffer. </param>
-        /// <param name="lpType"> Unused - set to Intpr.Zero. </param>
-        /// <param name="lpData"> Unused - set to Intpr.Zero. </param>
-        /// <param name="lpcbData"> Unused - set to Intpr.Zero. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "OREnumValue", CharSet = CharSet.Unicode)]
-        public static extern Win32Result EnumValue(
-            IntPtr hKey,
-            uint dwIndex,
-            StringBuilder lpValueName,
-            ref uint lpcchValueName,
-            IntPtr lpType,
-            IntPtr lpData,
-            IntPtr lpcbData);
 
-        /// <summary>
-        /// Gets a keys security descriptor. See http://msdn.microsoft.com/en-us/library/ee210766(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open key. </param>
-        /// <param name="securityInformation"> The type of security information to request. </param>
-        /// <param name="pSecurityDescriptor"> Pointer to data buffer. </param>
-        /// <param name="lpcbSecurityDescriptor"> Size of the data buffer. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORGetKeySecurity")]
-        public static extern Win32Result GetKeySecurity(
+
+        //[DllImport(OffRegDllName, EntryPoint = "ORGetKeySecurity")]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORGetKeySecurity(
             IntPtr hKey,
             SECURITY_INFORMATION securityInformation,
             IntPtr pSecurityDescriptor,
             ref uint lpcbSecurityDescriptor);
 
-        /// <summary>
-        /// Gets a value under a key. See http://msdn.microsoft.com/en-us/library/ee210767(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open key. </param>
-        /// <param name="lpSubKey">
-        /// The name of the subkey under the parent, from which to retrieve the value. May be null.
-        /// </param>
-        /// <param name="lpValue"> Name of the value to retrieve. </param>
-        /// <param name="pdwType"> The type of the value. </param>
-        /// <param name="pvData"> Pointer to a data buffer. </param>
-        /// <param name="pcbData"> Size of the data buffer. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORGetValue", CharSet = CharSet.Unicode)]
-        public static extern Win32Result GetValue(
+        //[DllImport(OffRegDllName, EntryPoint = "ORGetValue", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORGetValue(
             IntPtr hKey,
             string lpSubKey,
             string lpValue,
@@ -334,65 +172,18 @@ namespace OffineRegistry
             IntPtr pvData,
             ref uint pcbData);
 
-        /// <summary>
-        /// Gets a value under a key. See http://msdn.microsoft.com/en-us/library/ee210767(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open key. </param>
-        /// <param name="lpSubKey">
-        /// The name of the subkey under the parent, from which to retrieve the value. May be null.
-        /// </param>
-        /// <param name="lpValue"> Name of the value to retrieve. </param>
-        /// <param name="pdwType"> The type of the value. </param>
-        /// <param name="pvData"> Unused - set to Intpr.Zero. </param>
-        /// <param name="pcbData"> Unused - set to Intpr.Zero. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORGetValue", CharSet = CharSet.Unicode)]
-        public static extern Win32Result GetValue(
-            IntPtr hKey,
-            string lpSubKey,
-            string lpValue,
-            out RegValueType pdwType,
-            IntPtr pvData,
-            IntPtr pcbData);
 
-        /// <summary>
-        /// Open a subkey. See http://msdn.microsoft.com/en-us/library/ee210771(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open parent key. </param>
-        /// <param name="lpSubKey"> Name of the subkey to open. </param>
-        /// <param name="phkResult"> Handle to the opened subkey. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "OROpenKey", CharSet = CharSet.Unicode)]
-        public static extern Win32Result OpenKey(
+
+        //[DllImport(OffRegDllName, EntryPoint = "OROpenKey", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result OROpenKey(
             IntPtr hKey,
             string lpSubKey,
             out IntPtr phkResult);
 
-        /// <summary>
-        /// Query details about a key. See http://msdn.microsoft.com/en-us/library/ee210772(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open key. </param>
-        /// <param name="lpClass"> The keys class. </param>
-        /// <param name="lpcchClass"> The size of the class string in chars. </param>
-        /// <param name="lpcSubKeys"> The number of subkeys. </param>
-        /// <param name="lpcbMaxSubKeyLen"> The largest name of a subkey. </param>
-        /// <param name="lpcbMaxClassLen"> The largest subkey class size. </param>
-        /// <param name="lpcValues"> The number of values. </param>
-        /// <param name="lpcbMaxValueNameLen"> The largest name of a value. </param>
-        /// <param name="lpcbMaxValueLen"> The largest values size. </param>
-        /// <param name="lpcbSecurityDescriptor">
-        /// The size of the security descriptor for this key.
-        /// </param>
-        /// <param name="lpftLastWriteTime"> The last time the key was written to. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORQueryInfoKey", CharSet = CharSet.Unicode)]
-        public static extern Win32Result QueryInfoKey(
+        //[DllImport(OffRegDllName, EntryPoint = "ORQueryInfoKey", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORQueryInfoKey(
             IntPtr hKey,
             StringBuilder lpClass,
             ref uint lpcchClass,
@@ -405,38 +196,68 @@ namespace OffineRegistry
             ref uint lpcbSecurityDescriptor,
             ref FILETIME lpftLastWriteTime);
 
-        /// <summary>
-        /// Sets a value. See http://msdn.microsoft.com/en-us/library/ee210775(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open key. </param>
-        /// <param name="lpValueName"> The name of the value. </param>
-        /// <param name="dwType"> The type of the value. </param>
-        /// <param name="lpData"> The data buffer to save in the value. </param>
-        /// <param name="cbData"> The size of the data buffer. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORSetValue", CharSet = CharSet.Unicode)]
-        public static extern Win32Result SetValue(
+        //[DllImport(OffRegDllName, EntryPoint = "ORSetValue", CharSet = CharSet.Unicode)]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORSetValue(
             IntPtr hKey,
             string lpValueName,
             RegValueType dwType,
             IntPtr lpData,
             uint cbData);
 
-        /// <summary>
-        /// Sets a keys security descriptor. See http://msdn.microsoft.com/en-us/library/ee210774(v=vs.85).aspx
-        /// </summary>
-        /// <param name="hKey"> Handle to an open key. </param>
-        /// <param name="securityInformation"> The type of security information to set. </param>
-        /// <param name="pSecurityDescriptor"> Pointer to data buffer. </param>
-        /// <returns>
-        /// <see cref="Win32Result"/> of the result. Win32Result.ERROR_SUCCESS indicates success.
-        /// </returns>
-        [DllImport(OffRegDllName, EntryPoint = "ORSetKeySecurity")]
-        public static extern Win32Result SetKeySecurity(
+        //[DllImport(OffRegDllName, EntryPoint = "ORSetKeySecurity")]
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal delegate Win32Result ORSetKeySecurity(
             IntPtr hKey,
             SECURITY_INFORMATION securityInformation,
             /*ref IntPtr*/ IntPtr pSecurityDescriptor);
+
+        public class PtrClass
+        {
+            //[DllImport(OffRegDllName, EntryPoint = "ORGetValue", CharSet = CharSet.Unicode)]
+            [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+            internal delegate Win32Result ORGetValue(
+                IntPtr hKey,
+                string lpSubKey,
+                string lpValue,
+                out RegValueType pdwType,
+                IntPtr pvData,
+                IntPtr pcbData);
+            //[DllImport(OffRegDllName, EntryPoint = "OREnumValue", CharSet = CharSet.Unicode)]
+            [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+            internal delegate Win32Result OREnumValue(
+                IntPtr hKey,
+                uint dwIndex,
+                StringBuilder lpValueName,
+                ref uint lpcchValueName,
+                IntPtr lpType,
+                IntPtr lpData,
+                IntPtr lpcbData);
+
+        }
+        /*-------------------------------------------------------------------*/
+        public readonly IntPtr OffregLibraryAddress;
+        public Native(string offregPath)
+        {
+            OffregLibraryAddress = LoadLibrary(offregPath);
+        }
+        ~Native()
+        {
+            FreeLibrary(OffregLibraryAddress);
+        }
+        public T Syscall<T>() where T : Delegate
+        {
+            return Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(OffregLibraryAddress, typeof(T).Name));
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr LoadLibrary(string lpFileName);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool FreeLibrary(IntPtr hModule);
     }
 }

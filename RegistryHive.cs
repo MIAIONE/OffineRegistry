@@ -1,95 +1,65 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
+using System.Security;
+using static OffineRegistry.RegistryKey;
 
 namespace OffineRegistry
 {
-     public class RegistryHive : RegistryBase
-{
-    /// <summary>
-    ///     The Root key of this hive.
-    /// </summary>
-    public RegistryKey Root { get; private set; }
-
-    /// <summary>
-    ///     Internal constructor to form an Offline Registry Hive from an open handle.
-    /// </summary>
-    /// <param name="hivePtr"></param>
-    internal RegistryHive(IntPtr hivePtr)
+    [SuppressUnmanagedCodeSecurity]
+    internal class RegistryHive : RegistryBase
     {
-        _intPtr = hivePtr;
-
-        // Represent this as a key also
-        Root = new RegistryKey(null, _intPtr, null);
-    }
-
-    /// <summary>
-    ///     Saves a hive to Disk.
-    ///     See http://msdn.microsoft.com/en-us/library/ee210773(v=vs.85).aspx for more details.
-    /// </summary>
-    /// <remarks>The target file must not exist.</remarks>
-    /// <param name="targetFile">The target file to write to.</param>
-    /// <param name="majorVersionTarget">The compatibility version to save for, see the link in summary.</param>
-    /// <param name="minorVersionTarget">The compatibility version to save for, see the link in summary.</param>
-    public void SaveHive(string targetFile, uint majorVersionTarget, uint minorVersionTarget)
-    {
-        Win32Result res = Native.SaveHive(_intPtr, targetFile, majorVersionTarget, minorVersionTarget);
-
-        if (res != Win32Result.ERROR_SUCCESS)
-            throw new Win32Exception((int)res);
-    }
-
-    /// <summary>
-    ///     Creates a new hive in memory.
-    /// </summary>
-    /// <returns>The newly created hive.</returns>
-    public static RegistryHive Create()
-    {
-            Win32Result res = Native.CreateHive(out IntPtr newHive);
-
-            if (res != Win32Result.ERROR_SUCCESS)
-            throw new Win32Exception((int)res);
-
-        return new RegistryHive(newHive);
-    }
-
-    /// <summary>
-    ///     Opens an existing hive from the disk.
-    /// </summary>
-    /// <param name="hiveFile">The file to open.</param>
-    /// <returns>The newly opened hive.</returns>
-    public static RegistryHive Open(string hiveFile)
-    {
-            Win32Result res = Native.OpenHive(hiveFile, out IntPtr existingHive);
-
-            if (res != Win32Result.ERROR_SUCCESS)
-            throw new Win32Exception((int)res);
-
-        return new RegistryHive(existingHive);
-    }
-
-    /// <summary>
-    ///     Closes the hive and releases ressources used by it.
-    /// </summary>
-    public override void Close()
-    {
-        if (_intPtr != IntPtr.Zero)
+        public RegistryKey Root { get; private set; }
+        public string HivePath { get; private set; }
+        internal RegistryHive(IntPtr hivePtr, string hivePath)
         {
-            Win32Result res = Native.CloseHive(_intPtr);
+            _intPtr = hivePtr;
+            HivePath = hivePath;
+            Root = new RegistryKey(null, _intPtr, null, this);
+        }
+
+        public void Save(int majorVersionTarget, int minorVersionTarget)
+        {
+            Win32Result res = InitOffreg.NativeApi.Syscall<Native.ORSaveHive>()(_intPtr, HivePath, (uint)majorVersionTarget, (uint)minorVersionTarget);
 
             if (res != Win32Result.ERROR_SUCCESS)
                 throw new Win32Exception((int)res);
         }
-    }
 
-    /// <summary>
-    ///     Disposes the hive object and releases ressources used by it.
-    /// </summary>
-    public override void Dispose()
-    {
-        GC.SuppressFinalize(this);
-        Close();
+        public static RegistryHive Create(string hiveFile)
+        {
+            Win32Result res = InitOffreg.NativeApi.Syscall<Native.ORCreateHive>()(out IntPtr newHive);
+
+            if (res != Win32Result.ERROR_SUCCESS)
+                throw new Win32Exception((int)res);
+
+            return new RegistryHive(newHive, hiveFile);
+        }
+
+        public static RegistryHive Open(string hiveFile)
+        {
+            Win32Result res = InitOffreg.NativeApi.Syscall<Native.OROpenHive>()(hiveFile, out IntPtr existingHive);
+
+            if (res != Win32Result.ERROR_SUCCESS)
+                throw new Win32Exception((int)res);
+
+            return new RegistryHive(existingHive, hiveFile);
+        }
+
+        public override void Close()
+        {
+            if (_intPtr != IntPtr.Zero)
+            {
+                Win32Result res = InitOffreg.NativeApi.Syscall<Native.ORCloseHive>()(_intPtr);
+
+                if (res != Win32Result.ERROR_SUCCESS)
+                    throw new Win32Exception((int)res);
+            }
+        }
+
+        public override void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Close();
+        }
     }
-}
 }
